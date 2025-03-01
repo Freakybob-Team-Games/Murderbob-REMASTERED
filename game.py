@@ -6,7 +6,7 @@ import os
 import numpy as np
 import pypresence
 
-client_id = "1345305543295762533"
+client_id = "1345310086645415977"
 RPC = pypresence.Presence(client_id=client_id)
 RPC.connect()
 pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
@@ -16,7 +16,7 @@ def update_rpc_presence():
         RPC.update(
             details="Playing MurderBob - REMASTERED",
             state="Wave {}".format(wave),
-            large_image="/Assets/health.png",
+            large_image="remastered (1)",
             large_text="MurderBob - REMASTERED",
             small_text="Wave {}".format(wave),
         )
