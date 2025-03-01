@@ -18,7 +18,7 @@ START_DELAY = 10000
 WHITE = pygame.Color('white')
 BLACK = pygame.Color('black')
 RED = pygame.Color('red')
-
+player_money = 0
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("MurderBob - REMASTERED")
 
@@ -168,7 +168,7 @@ shots_fired = 0
 overheat_cooldown = False
 
 merchant = Merchant()
-player_money = 0
+
 
 player = Player()
 bullets = []
@@ -228,7 +228,10 @@ def draw_merchant_screen():
 
 
     font = pygame.font.Font(None, 36)
-    text = font.render(f"Welcome to my shop! Money: {player_money}", True, WHITE)
+    if player_money <= 0:
+        text = font.render(f"you poor ass bitch, gtfo of my store", True, WHITE)
+    else:    
+         text = font.render(f"Welcome to my shop! Money: {player_money}", True, WHITE)
     screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 50))
 
 
@@ -328,7 +331,7 @@ def endJumpscare():
     flash_duration = 5000
     flash_interval = 50  
 
-    distortion_level = 70
+    distortion_level = 0
     flicker_chance = 0.15
     flicker_duration = 30 
 
@@ -546,4 +549,5 @@ while running:
         
     pygame.display.flip()
     clock.tick(60)
+
 pygame.quit()
