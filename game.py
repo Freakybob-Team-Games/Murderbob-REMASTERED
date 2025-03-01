@@ -207,7 +207,7 @@ try:
     def show_warning_screen():
         try:
             pyautogui.alert("This game contains flashing lights, loud noises, and drug references. Proceed with caution. (Want to quit the game? Alt + F4 on the game window before the first wave.)", timeout=60000)
-            pygame.time.delay(1000)
+            #pygame.time.delay(1000)
             #print("displaying message")
             #Message(root, text="This game contains flashing lights, loud noises, and drug references. Proceed with caution. (Want to quit the game? Alt + F4 on the game window before the first wave.)", padx=20, pady=20).pack()
         except Exception as e:
