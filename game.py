@@ -4,9 +4,24 @@ import math
 import sys
 import os
 import numpy as np
+import pypresence
+
+client_id = "1345305543295762533"
+RPC = pypresence.Presence(client_id=client_id)
+RPC.connect()
 pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
 pygame.init()
-
+def update_rpc_presence():
+    try:
+        RPC.update(
+            details="Playing MurderBob - REMASTERED",
+            state="Wave {}".format(wave),
+            large_image="/Assets/health.png",
+            large_text="MurderBob - REMASTERED",
+            small_text="Wave {}".format(wave),
+        )
+    except Exception as e:
+        print(f"Error updating RPC presence: {e}")
 MAX_BULLETS = 100
 WIDTH, HEIGHT = 800, 600
 MOVE_SPEED = 2
@@ -263,7 +278,7 @@ def start_wave():
     wave_start_time = pygame.time.get_ticks()
 
 start_wave()
-
+update_rpc_presence()
 
 
 def generate_raw_sound(duration_ms, frequency=440, volume=0.1):
@@ -549,5 +564,6 @@ while running:
         
     pygame.display.flip()
     clock.tick(60)
-
+    
+RPC.close()
 pygame.quit()
