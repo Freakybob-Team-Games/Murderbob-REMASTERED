@@ -1,11 +1,17 @@
-import pygame
+import os
+try:
+    import pygame
+except ImportError:
+    print("pygame is not installed. Installing...")
+    os.system('pip install pygame')
+    import pygame
 import random
 import math
 
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
-MOVE_SPEED = 2
+MOVE_SPEED = 4
 BULLET_SPEED = 10
 WHITE = (255, 255, 255)
 WAVE_DELAY = 4000
@@ -18,6 +24,7 @@ PERK_SPAWN_INTERVAL = random.randint(10000, 15000)
 MAX_PERKS_ON_SCREEN = 2
 LOW_HEALTH_THRESHOLD = 40
 LAST_PERK_SPAWN = 0
+SPEED_PERK_USE_TIME = 5000
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("MurderBob - REMASTERED")
@@ -29,6 +36,7 @@ player_img = pygame.image.load("Assets/Freakybob.png")
 enemy_img = pygame.image.load("Assets/ScarySquirtward.png")
 
 special_leaf = pygame.image.load("Assets/special_leaf.jpg")
+speed_perk_img = pygame.image.load("Assets/speed_perk.png")
 gun = pygame.image.load("Assets/gun.png")
 player_img = pygame.transform.scale(player_img, (52, 52))
 enemy_img = pygame.transform.scale(enemy_img, (32, 32))
@@ -55,6 +63,7 @@ gunshot = pygame.mixer.Sound("Assets/gunshot.wav")
 
 class Player:
         def __init__(self):
+            self.original_speed = MOVE_SPEED
             self.image = player_img
             self.width, self.height = self.image.get_size()
             self.x = WIDTH // 2
@@ -65,6 +74,7 @@ class Player:
             self.last_hurt_time = 0
             self.hurt_cooldown = 1000
             self.original_image = self.image
+            self.speed_perk_active = False
 
         def move(self, keys, health_rect):
             original_x, original_y = self.x, self.y
@@ -133,8 +143,19 @@ class Enemy:
 
     def spawn_enemy(self, health_rect):
         while True:
-            x = random.randint(0, WIDTH - self.width)
-            y = random.randint(0, HEIGHT - self.height)
+            side = random.randint(1, 4)
+            if side == 1:  # top
+                x = random.randint(0, WIDTH - self.width)
+                y = -self.height
+            elif side == 2:  # right
+                x = WIDTH
+                y = random.randint(0, HEIGHT - self.height)
+            elif side == 3:  # bottom
+                x = random.randint(0, WIDTH - self.width)
+                y = HEIGHT
+            else:  # left
+                x = -self.width
+                y = random.randint(0, HEIGHT - self.height)
             enemy_rect = pygame.Rect(x, y, self.width, self.height)
             if not enemy_rect.colliderect(health_rect):
                 return x, y
@@ -187,24 +208,32 @@ class Perk:
         self.x = x
         self.y = y
         self.type = type
-        self.original_image = pygame.transform.scale(special_leaf, (31, 31))
+        if self.type == 0:
+            self.original_image = pygame.transform.scale(special_leaf, (31, 31))
+        elif self.type == 1:
+            self.original_image = pygame.transform.scale(speed_perk_img, (31, 31))
         self.image = self.original_image
         self.width, self.height = self.image.get_size()
     def draw(self, screen):
-        if self.image:
-            screen.blit(self.image, (self.x, self.y))
+        screen.blit(self.image, (self.x, self.y))
 
     def intersects(self, player_x, player_y):
         return (self.x < player_x + 52 and self.x + self.width > player_x and 
                 self.y < player_y + 52 and self.y + self.height > player_y)
+    
 
-def apply_perk(self, player):
-    if self.type == 0:
-        if player.health < 100:
-            player.health = min(100, player.health + 20)
+    def apply_perk(self, player):
+        if self.type == 0:
+            if player.health < 100:
+                player.health = min(100, player.health + 20)
         elif self.type == 1:
-            # I'll do this stuff later
-            pass
+            if not player.speed_perk_active:
+                player.speed_perk_active = True
+                player.speed = player.original_speed * 1.5
+                pygame.time.set_timer(pygame.USEREVENT + 1, SPEED_PERK_USE_TIME)
+        
+        
+
 class Boss(Enemy):
     def __init__(self, speed, health_rect):
         super().__init__(speed, health_rect)
@@ -293,19 +322,17 @@ game_start_time = pygame.time.get_ticks()
 
 def start_wave():
     global wave, enemies_remaining, wave_active, wave_start_time, game_start_time
-    if pygame.time.get_ticks() - game_start_time < START_DELAY:
-        return
+    
 
 
     if wave == 15:
-
         enemies.clear()
         enemies.append(Boss(1.5 + (wave * 0.2), pygame.Rect(0, screen.get_height() - 50, 100, 50)))
         enemies_remaining = 1
     else:
-        num_enemies = wave * 1.1
+        num_enemies = wave * 1
         num_enemies = int(num_enemies)
-        enemy_speed = 1.2 + (wave * 0.1)
+        enemy_speed = 1.7 + (wave * 0.1)
         enemies.clear()
 
         health_image = pygame.image.load('Assets/health.png')
@@ -318,7 +345,7 @@ def start_wave():
 
     wave_active = True
     wave_start_time = pygame.time.get_ticks()
-start_wave()
+    wave += 1
 
 def game_over():
     pygame.mixer.stop()
@@ -347,12 +374,15 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  
             mouse_x, mouse_y = pygame.mouse.get_pos()
             shoot_bullet(gun, bullets, mouse_x, mouse_y)
             gunshot.play()
         elif event.type == pygame.USEREVENT:
             player.reset_image()
+        elif event.type == pygame.USEREVENT + 1:  
+            player.speed_perk_active = False
+            player.speed = player.original_speed
 
     current_time = pygame.time.get_ticks()
     
@@ -382,7 +412,6 @@ while running:
         wave_start_time = pygame.time.get_ticks()
     elif not wave_active and pygame.time.get_ticks() - wave_start_time >= current_wave_delay:
         start_wave()
-        wave += 1
         
     health_image = pygame.image.load('Assets/health.png')
     health_rect = pygame.Rect(0, screen.get_height() - health_image.get_height() + 5, health_image.get_width(), health_image.get_height())
@@ -461,8 +490,10 @@ while running:
 
     gun.update(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
     gun.draw(screen)
-
-    wave_text = font.render(f"Wave: {wave}", True, WHITE)
+    if wave == 1:
+        wave_text = font.render(f"Wave: {wave}", True, WHITE)
+    else:
+        wave_text = font.render(f"Wave: {wave - 1}", True, WHITE)
     screen.blit(wave_text, (10, 30))
     health_text = font.render(f"Health: {player.health}", True, WHITE)
     health_image.blit(health_text, (28, 30))
