@@ -1,3 +1,8 @@
+"""
+Made by Freakybob-Team-Games
+Uhhh idfk bout some license yea
+"""
+
 import os
 try:
     import pygame
