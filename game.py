@@ -348,7 +348,7 @@ class Boss(Enemy):
             self.rage_mode = True
             pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
 
-    def attack(self, player, bullets, screen):
+    def attack(self, player, bullets):
         current_time = pygame.time.get_ticks()
 
         self.update_attack_pattern()
@@ -376,7 +376,7 @@ class Boss(Enemy):
             bullet = Bullet(self.x + self.width / 2, self.y + self.height / 2, target_x, target_y, from_boss=True)
             bullets.append(bullet)
 
-    def special_attack(self, player, bullets):
+    def special_attack(self, bullets):
         num_bullets = 12
         for i in range(num_bullets):
             angle = 2 * math.pi * i / num_bullets
@@ -473,7 +473,7 @@ enemies = []
 running = True
 clock = pygame.time.Clock()
 perks = []
-wave = 1
+wave = 15
 enemies_remaining = 0
 wave_active = False
 wave_start_time = pygame.time.get_ticks()
