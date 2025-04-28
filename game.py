@@ -87,6 +87,11 @@ class Player:
             if keys[pygame.K_s]: self.y += self.speed
             if keys[pygame.K_a]: self.x -= self.speed
             if keys[pygame.K_d]: self.x += self.speed
+            
+            if keys[pygame.K_UP]: self.y -= self.speed
+            if keys[pygame.K_DOWN]: self.y += self.speed
+            if keys[pygame.K_LEFT]: self.x -= self.speed
+            if keys[pygame.K_RIGHT]: self.x += self.speed
 
             player_rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
